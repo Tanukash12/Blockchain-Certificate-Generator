@@ -39,7 +39,7 @@ A decentralized certificate generator built using **Solidity**, **HTML/CSS/JS**,
 
 ## 🔗 Live Project
 
-[Live Demo on Vercel]((https://blockchain-certificate-generator.vercel.app/)) 
+[Live Demo on Vercel](https://blockchain-certificate-generator.vercel.app/) 
 
 ---
 
