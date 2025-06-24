@@ -48,5 +48,5 @@ A decentralized certificate generator built using **Solidity**, **HTML/CSS/JS**,
 Contributions are welcome! Feel free to fork this repo, raise issues or submit PRs.
 
 ## 🪪 License
-
+© 2025 Tanushka Kashyap. All rights reserved.
 This project is open-source under the **MIT License**.
