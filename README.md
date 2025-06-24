@@ -35,7 +35,7 @@ A decentralized certificate generator built using **Solidity**, **HTML/CSS/JS**,
 
 ## 📷 Screenshot
 
-*(Add screenshot after deployment on Vercel for better visual impact)*
+![Screenshot](./Screenshot%20(748).png)
 
 ## 🔗 Live Project
 
