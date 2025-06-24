@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blockchain Certificate Generator</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+      font-family: 'Courier New', Courier, monospace;
+      color: #eee;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 30px;
+      background-color: rgba(0, 0, 0, 0.8);
+      border-radius: 12px;
+      box-shadow: 0 0 15px #6c63ff;
+    }
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 15px;
+      color: #9f7aea;
+      animation: typing 3s steps(30, end), blink-caret 0.75s step-end infinite;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 2px solid #9f7aea;
+    }
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: #9f7aea; }
+    }
+    form {
+      margin-top: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      background-color: #1c1c1c;
+      color: #eee;
+      border: 1px solid #555;
+      border-radius: 6px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #9f7aea;
+      border: none;
+      color: black;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #b794f4;
+    }
+    #status, #certList {
+      margin-top: 20px;
+      text-align: center;
+      color: #90ee90;
+    }
+    .view-btn {
+      margin-top: 15px;
+      background-color: #6c63ff;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="heading">Blockchain Certificate Generator</h1>
+
+    <form id="certForm">
+      <input type="text" id="studentAddress" placeholder="Student Wallet Address" required />
+      <input type="text" id="studentName" placeholder="Student Name" required />
+      <input type="text" id="courseName" placeholder="Course Name" required />
+      <input type="text" id="certHash" placeholder="Certificate IPFS Hash" required />
+      <button type="submit">Issue Certificate</button>
+    </form>
+
+    <button class="view-btn" onclick="viewCertificates()">View Certificates</button>
+
+    <div id="status"></div>
+    <div id="certList"></div>
+  </div>
+
+  <script>
+    const contractAddress = "0xc40f5f7916d5886e777ddf7f508f58cad3da2c86"; // your address
+    const contractABI = [
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "student",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "courseName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "certificateHash",
+				"type": "string"
+			}
+		],
+		"name": "CertificateIssued",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "student",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "studentName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "courseName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "certificateHash",
+				"type": "string"
+			}
+		],
+		"name": "issueCertificate",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "certificates",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "studentName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "courseName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "certificateHash",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "issueDate",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "student",
+				"type": "address"
+			}
+		],
+		"name": "getCertificates",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "studentName",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "courseName",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "certificateHash",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "issueDate",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct CertificateGenerator.Certificate[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+
+    let web3;
+    let contract;
+
+    window.addEventListener("load", async () => {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        contract = new web3.eth.Contract(contractABI, contractAddress);
+        document.getElementById("status").innerText = "✅ Connected to MetaMask";
+      } else {
+        alert("Please install MetaMask to use this app.");
+      }
+    });
+
+    document.getElementById("certForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const student = document.getElementById("studentAddress").value;
+      const studentName = document.getElementById("studentName").value;
+      const courseName = document.getElementById("courseName").value;
+      const certHash = document.getElementById("certHash").value;
+      const accounts = await web3.eth.getAccounts();
+      try {
+        document.getElementById("status").innerText = "⏳ Issuing certificate...";
+        await contract.methods.issueCertificate(student, studentName, courseName, certHash).send({ from: accounts[0] });
+        document.getElementById("status").innerText = "✅ Certificate issued successfully!";
+      } catch (error) {
+        console.error(error);
+        document.getElementById("status").innerText = "❌ Error: " + error.message;
+      }
+    });
+
+    async function viewCertificates() {
+      const studentAddress = document.getElementById("studentAddress").value;
+        console.log("Fetching certs for:", studentAddress);
+        console.log("Contract instance:", contract);
+      try {
+        const certs = await contract.methods.getCertificates(studentAddress).call();
+        let html = "<h3>Certificates:</h3>";
+        certs.forEach(cert => {
+          html += `<div style='margin:10px 0;padding:10px;border:1px dashed #9f7aea;'>
+            <p><strong>Name:</strong> ${cert.studentName}</p>
+            <p><strong>Course:</strong> ${cert.courseName}</p>
+            <p><strong>IPFS:</strong> <a href='https://ipfs.io/ipfs/${cert.certificateHash}' target='_blank'>${cert.certificateHash}</a></p>
+            <button onclick="window.open('https://dweb.link/ipfs/${cert.certificateHash}', '_blank')">📥 Download Certificate</button>
+            <p><strong>Date:</strong> ${new Date(Number(cert.issueDate) * 1000).toLocaleString()}</p>
+
+          </div>`;
+        });
+        document.getElementById("certList").innerHTML = html;
+      } catch (err) {
+        document.getElementById("certList").innerText = "❌ Failed to fetch certificates.";
+        console.error(err);
+      }
+    }
+
+    // 🔄 Detect MetaMask account change
+    window.ethereum.on("accountsChanged", (accounts) => {
+    if (accounts.length === 0) {
+        document.getElementById("status").innerText = "🔌 MetaMask disconnected";
+    } else {
+        document.getElementById("status").innerText = `🔄 Account changed: ${accounts[0]}`;
+    }
+    });
+
+    // 🌐 Detect network change
+    window.ethereum.on("chainChanged", () => {
+    window.location.reload(); // Force reload to reset state
+    });
+
+  </script>
+</body>
+</html>
